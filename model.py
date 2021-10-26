@@ -44,16 +44,16 @@ class State:
             return True
         return False
     
-    def iterate():
+    def iterate(self):
         rand_x = np.random.randint(self.crossroad_width)
         rand_y = np.random.randint(self.crossroad_height)
-        p1 = Pedestrian(rand_x, rand_y, 1)
+        p1 = Pedestrian(Position(rand_x, rand_y), 1)
         rand_x = np.random.randint(self.crossroad_width)
         rand_y = np.random.randint(self.crossroad_height)
-        p2 = Pedestrian(rand_x, rand_y, 1)
+        p2 = Pedestrian(Position(rand_x, rand_y), 1)
         rand_x = np.random.randint(self.crossroad_width)
         rand_y = np.random.randint(self.crossroad_height)
-        c1 = Car(rand_x, rand_y, 1)
+        c1 = Car(Position(rand_x, rand_y), 1)
         self.pedestrians = [p1, p2]
         self.cars = [c1]
 

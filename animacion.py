@@ -7,7 +7,6 @@ from matplotlib.pyplot import figure
 
 from model import State
 
-
 global s
 s = State()
 
@@ -29,9 +28,11 @@ traffic_lights = np.array([[traffic_light_red],[0]])
 
 def update(i):
     traffic_lights_matrix.set_array(traffic_lights)
+    s.iterate()
     matrix.set_array(s.matrix())
 
 fig, ax = plt.subplots(2, 1, figsize=(16,9), gridspec_kw={'height_ratios': [1, 3]})
+
 matrix = ax[1].imshow(s.matrix(), cmap='gray', norm=plt.Normalize(0,100))
 
 # Minor ticks

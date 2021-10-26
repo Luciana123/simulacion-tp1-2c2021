@@ -45,17 +45,20 @@ class State:
         return False
     
     def iterate(self):
-        rand_x = np.random.randint(self.crossroad_width)
-        rand_y = np.random.randint(self.crossroad_height)
-        p1 = Pedestrian(Position(rand_x, rand_y), 1)
-        rand_x = np.random.randint(self.crossroad_width)
-        rand_y = np.random.randint(self.crossroad_height)
-        p2 = Pedestrian(Position(rand_x, rand_y), 1)
-        rand_x = np.random.randint(self.crossroad_width)
-        rand_y = np.random.randint(self.crossroad_height)
-        c1 = Car(Position(rand_x, rand_y), 1)
-        self.pedestrians = [p1, p2]
-        self.cars = [c1]
+        ps = []
+        cs = []
+        for i in range(1, np.random.randint(1,100)):
+            rand_x = np.random.randint(self.crossroad_width)
+            rand_y = np.random.randint(self.crossroad_height)
+            ps.append(Pedestrian(Position(rand_x, rand_y), 1))
+
+        for i in range(1, np.random.randint(1,100)):
+            rand_x = np.random.randint(self.crossroad_width)
+            rand_y = np.random.randint(self.crossroad_height)
+            cs.append(Car(Position(rand_x, rand_y), 1))
+
+        self.pedestrians = ps
+        self.cars = cs
 
     def matrix(self):
         

@@ -20,8 +20,8 @@ traffic_light_red = 2
 traffic_light_off = 0
 
 # Cantidad de celdas maxima
-x_cells = s.crossroad_height
-y_cells = s.crossroad_width
+x_cells = s.crossroad_width
+y_cells = s.crossroad_height
 
 # Genero el semaforo
 traffic_lights = np.array([[traffic_light_red],[0]])
@@ -29,11 +29,11 @@ traffic_lights = np.array([[traffic_light_red],[0]])
 def update(i):
     traffic_lights_matrix.set_array(traffic_lights)
     s.iterate()
-    matrix.set_array(s.matrix())
+    matrix.set_array(s.matrix().transpose())
 
 fig, ax = plt.subplots(2, 1, figsize=(16,9), gridspec_kw={'height_ratios': [1, 3]})
 
-matrix = ax[1].imshow(s.matrix(), cmap='gray', norm=plt.Normalize(0,100))
+matrix = ax[1].imshow(s.matrix().transpose(), cmap='gray', norm=plt.Normalize(0,100))
 
 # Minor ticks
 ax[1].set_xticks(np.arange(0.5, x_cells, step=1))

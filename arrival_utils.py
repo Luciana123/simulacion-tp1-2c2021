@@ -1,4 +1,5 @@
 import numpy as np
+from model import Car, Pedestrian
 
 
 class Poisson:
@@ -57,23 +58,34 @@ class Poisson:
     def __exponential(self, num):
         return - np.log(num / RandomNumber.MODULE) / self.arrival_rate
 
-class CarArrival(Poisson):
-    def __init__(self, arrival_rate, seed=0):
-        super().__init__(arrival_rate, seed)
+
+class ObjectArrival(Poisson):
+    def __init__(self, arrival_rate, t_limit, seed):
+        super().__init__(arrival_rate, t_limit, seed)
+        self.velocity_calculator = VelocityCalculator()
+
+    def map_object(self, x):
+        raise NotImplementedError("Please Implement this method")
 
     def next(self, offset=1):
-        offset
-        # TODO: complete the following line.
-        # return [Car(pos, velocity) for x in super()]
+        return list(map(lambda x: self.map_object(x), super().next()))
 
-class PedestrianArrival(Poisson):
-    def __init__(self, arrival_rate, seed=0):
-        super().__init__(arrival_rate, seed)
 
-    def next(self, offset=1):
-        offset
-        # TODO: complete the following line.
-        # return [Pedestrian(pos, velocity) for x in super()]
+class CarArrival(ObjectArrival):
+    def __init__(self, arrival_rate, t_limit=3600, seed=0):
+        super().__init__(arrival_rate, t_limit, seed)
+
+    def map_object(self, x):
+        return Car([1, 1], self.velocity_calculator.next(RandomNumber.get(x)))
+
+
+class PedestrianArrival(ObjectArrival):
+    def __init__(self, arrival_rate, t_limit=3600, seed=0):
+        super().__init__(arrival_rate, t_limit, seed)
+
+    def map_object(self, x):
+        return Pedestrian([1, 1], self.velocity_calculator.next(RandomNumber.get(x)))
+
 
 class RandomNumber:
     MODULE = 4294967296
@@ -82,4 +94,26 @@ class RandomNumber:
 
     @classmethod
     def next(cls, n):
-        return (RandomNumber.MULTIPLIER * n + RandomNumber.INCREMENT) % RandomNumber.MODULE
+        return (cls.MULTIPLIER * n + cls.INCREMENT) % cls.MODULE
+
+    @classmethod
+    def get(cls, n):
+        return cls.next(n) / cls.MODULE
+
+
+class VelocityCalculator:
+    VALUES = [2, 3, 4, 5, 6]
+    P = [2730 / 10000, 5200 / 10000, 1370 / 10000, 480 / 10000, 220 / 10000]
+
+    def __init__(self):
+        p = VelocityCalculator.P
+        self.proba_vector = [
+            0, p[0], p[0] + p[1], p[0] + p[1] + p[2], p[0] + p[1] + p[2] + p[3], p[0] + p[1] + p[2] + p[3] + p[4]
+        ]
+
+    def next(self, n):
+        label_idx = 0
+        for idx in range(0, len(self.proba_vector) - 1):
+            if (n >= self.proba_vector[idx]) and (n <= self.proba_vector[idx + 1]):
+                label_idx = idx
+        return VelocityCalculator.VALUES[label_idx]

@@ -1,5 +1,5 @@
 import numpy as np
-from model import Car, Pedestrian
+from model import Car, Pedestrian, Position
 
 
 class Poisson:
@@ -76,7 +76,7 @@ class CarArrival(ObjectArrival):
         super().__init__(arrival_rate, t_limit, seed)
 
     def map_object(self, x):
-        return Car([1, 1], self.velocity_calculator.next(RandomNumber.get(x)))
+        return Car(Position(1, 1), 10)
 
 
 class PedestrianArrival(ObjectArrival):
@@ -84,7 +84,7 @@ class PedestrianArrival(ObjectArrival):
         super().__init__(arrival_rate, t_limit, seed)
 
     def map_object(self, x):
-        return Pedestrian([1, 1], self.velocity_calculator.next(RandomNumber.get(x)))
+        return Pedestrian(Position(-1,-1), self.velocity_calculator.next(RandomNumber.get(x)))
 
 
 class RandomNumber:

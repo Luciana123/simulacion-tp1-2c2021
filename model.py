@@ -17,7 +17,7 @@ class Poisson:
         """Get next instances per second.
         Example: first next() should return the arrivals between [0, 0 + offset)."""
         self.last_offset += offset
-        if self.last_offset == len(self.arrivals):
+        if self.last_offset == len(self.intervals):
             raise AttributeError
 
         return self.intervals[self.last_offset]

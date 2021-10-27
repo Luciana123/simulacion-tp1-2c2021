@@ -460,7 +460,7 @@ class State:
         self.cars = []
         self.pedestrians = []
         self.crossroad_width = 62
-        self.crossroad_height = 15
+        self.crossroad_height = 20
         self.semaforo_tiempo_verde = 10
         self.semaforo_tiempo_rojo = 20
         self.nro_iteracion = 0

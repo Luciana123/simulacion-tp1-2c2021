@@ -60,10 +60,9 @@ ax[0].axis('off')
 ax[0].set_title('Pedestrian light')
 ax[1].set_title('Crosswalk')
 
-ped = "Pedestrians in simulation: {}".format(len(s.pedestrians))
-stats = [ped]
 
-label_stats = ax[0].text(0.1, 0.7, '\n'.join(stats), fontsize=14, transform=plt.gcf().transFigure)
+
+label_stats = ax[0].text(0.1, 0.7, '', fontsize=14, transform=plt.gcf().transFigure)
 
 # Animacion
 ani = FuncAnimation(fig, update, frames=200000000, interval=500)

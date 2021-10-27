@@ -7,6 +7,7 @@ class Poisson:
         self.seed = seed
         self.t_limit = t_limit
         self.arrival_rate = arrival_rate
+        self.random = RandomNumber(seed)
         self.arrivals = self.__sim()
         self.intervals = self.__interval_split()
         self.last_offset = -1
@@ -45,18 +46,16 @@ class Poisson:
 
     def __sim(self):
         t_acum = 0
-        num = self.seed
         aux = []
         while t_acum <= self.t_limit:
-            num = RandomNumber.next(num)
-            z = self.__exponential(num)
+            z = self.__exponential(self.random.get())
             t_acum += z
             aux.append(t_acum)
 
         return aux
 
-    def __exponential(self, num):
-        return - np.log(num / RandomNumber.MODULE) / self.arrival_rate
+    def __exponential(self, n):
+        return - np.log(1-n) / self.arrival_rate
 
 
 class ObjectArrival(Poisson):
@@ -72,11 +71,13 @@ class ObjectArrival(Poisson):
 
 
 class CarArrival(ObjectArrival):
+    CAR_VELOCITY = 10
+
     def __init__(self, arrival_rate, t_limit=3600, seed=0):
         super().__init__(arrival_rate, t_limit, seed)
 
     def map_object(self, x):
-        return Car(Position(1, 1), 10)
+        return Car(Position(1, 1), CarArrival.CAR_VELOCITY)
 
 
 class PedestrianArrival(ObjectArrival):
@@ -84,7 +85,7 @@ class PedestrianArrival(ObjectArrival):
         super().__init__(arrival_rate, t_limit, seed)
 
     def map_object(self, x):
-        return Pedestrian(Position(-1,-1), self.velocity_calculator.next(RandomNumber.get(x)))
+        return Pedestrian(Position(-1, -1), self.velocity_calculator.next(self.random.get()))
 
 
 class RandomNumber:
@@ -92,14 +93,15 @@ class RandomNumber:
     MULTIPLIER = 1013904223
     INCREMENT = 1664525
 
-    @classmethod
-    def next(cls, n):
-        return (cls.MULTIPLIER * n + cls.INCREMENT) % cls.MODULE
+    def __init__(self, seed=1):
+        self.seed = seed
 
-    @classmethod
-    def get(cls, n):
-        return cls.next(n) / cls.MODULE
+    def get(self):
+        return self.__next() / RandomNumber.MODULE
 
+    def __next(self):
+        self.seed = (RandomNumber.MULTIPLIER * self.seed + RandomNumber.INCREMENT) % RandomNumber.MODULE
+        return self.seed
 
 class VelocityCalculator:
     VALUES = [2, 3, 4, 5, 6]

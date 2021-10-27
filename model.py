@@ -460,8 +460,8 @@ class State:
         self.cars = []
         self.pedestrians = []
         self.crossroad_width = 62
-        self.crossroad_height = 30
-        self.semaforo_tiempo_verde = 5
+        self.crossroad_height = 15
+        self.semaforo_tiempo_verde = 10
         self.semaforo_tiempo_rojo = 20
         self.nro_iteracion = 0
         self.cantidad_iteraciones = 100
@@ -483,9 +483,6 @@ class State:
         return False  
         
     def iterar(self):
-
-        print('cantidad peatones:', len(self.pedestrians))
-        print('cantidad autos:', len(self.cars))
 
         # llegada de peatones
         self.pedestrians += self.pedestrian_arrival.next()

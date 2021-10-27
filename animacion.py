@@ -31,6 +31,17 @@ def update(i):
     s.iterar()
     matrix.set_array(s.matrix().transpose())
 
+    ped = "Pedestrians in simulation: {}".format(len(s.pedestrians))
+    cars = "Cars in simulation: {}".format(len(s.cars))
+    conflict1 = "Pedestrian Pedestrian conflict: {}".format(s.conflicto_peatones_misma_pos)
+    conflict2 = "Pedestrian Car conflict: {}".format(s.conflicto_auto_espera_peaton)
+    red_light_time = "Red light time: {}".format(s.semaforo_tiempo_rojo)
+    green_light_time = "Green light time: {}".format(s.semaforo_tiempo_verde)
+    
+    stats = [ped, cars, conflict1, red_light_time, green_light_time]
+    label_stats.set_text('\n'.join(stats))
+
+
 fig, ax = plt.subplots(2, 1, figsize=(16,9), gridspec_kw={'height_ratios': [1, 3]})
 
 matrix = ax[1].imshow(s.matrix().transpose(), cmap='gray', norm=plt.Normalize(0,100))
@@ -46,8 +57,14 @@ cmap = mpl.colors.LinearSegmentedColormap.from_list("", ["black","red","green"])
 
 traffic_lights_matrix = ax[0].imshow(traffic_lights, cmap=cmap, norm=plt.Normalize(0,4))
 ax[0].axis('off')
-ax[0].set_title('Pedestrian light. Red: {} Green {}'.format(s.semaforo.tiempo_rojo, s.semaforo.tiempo_verde))
+ax[0].set_title('Pedestrian light')
 ax[1].set_title('Crosswalk')
+
+ped = "Pedestrians in simulation: {}".format(len(s.pedestrians))
+stats = [ped]
+
+label_stats = ax[0].text(0.1, 0.7, '\n'.join(stats), fontsize=14, transform=plt.gcf().transFigure)
+
 # Animacion
 ani = FuncAnimation(fig, update, frames=200000000, interval=500)
 plt.show()

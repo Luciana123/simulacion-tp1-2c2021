@@ -148,17 +148,7 @@ class Pedestrian:
         self.next_position = None
        
     def set_in_matrix(self, matrix):
-        matrix.put(self.position.x, self.position.y, self)
-            
-    
-    # Establece su posicion y direccion inicial
-    def locate(self):
-        # cambiar por posiciones al azar
-        self.position = Position(0,0)
-        if (np.random.rand() < 0.5):
-            self.direction = 'right'
-        else:
-            self.direction = 'left'      
+        matrix.put(self.position.x, self.position.y, self) 
             
             
     def avanzar(self, matrix, semaforo):
@@ -173,13 +163,27 @@ class Pedestrian:
         
         else:  # Semaforo verde
             if self.position.is_negative(): # no empieza a cruzar
-                self.locate()
+                self.locate(matrix)
                 
             self.move_forward(matrix) 
             if not self.next_position:  # Posicion ocupada
                 self.lane_change(matrix)
             return self.next_position
         
+            
+    # Establece su posicion y direccion inicial
+    def locate(self, matrix):
+        # cambiar por posiciones al azar
+        height = matrix.get_height()
+        width = matrix.get_width()
+        pos_y = np.random.randint(height - 1)
+        if (np.random.rand() < 0.5):
+            self.direction = 'right'
+            self.position = Position(0, pos_y)
+        else:
+            self.direction = 'left'             
+            self.position = Position(width - 1, pos_y)
+            
         
     def continuar(self, matrix):
         matrix.put(self.position.x, self.position.y, None)
@@ -266,9 +270,15 @@ class Pedestrian:
  
     def is_pedestrian(self):
         return True
-        
+                
+    def finished(self, matrix):
+        if self.direction == 'right':
+            return self.position.x >= matrix.get_width()
+        return self.position.x < 0
+    
     def __str__(self):
         return 'Pos {0} Vel {1}'.format(self.position, self.velocity)
+
 
 class Car:
     def __init__(self, position, velocity):
@@ -277,12 +287,11 @@ class Car:
         self.velocity = 10 # 5 m/s * 2 cell/m
         self.initial_pos = position
         self.positions = []
-        for i in range(0, self.size_x):
-            self.positions.append([])
-            for j in range(0, self.size_y):
-                self.positions[i].append(Position(position.x + i, position.y + j))
+        self.started = False
         
     def set_in_matrix(self, matrix):
+        if not self.started:
+            return
         for i in range(0, self.size_x):
             for j in range(0, self.size_y):
                 matrix.put(self.positions[i][j].x, self.positions[i][j].y, self)
@@ -294,8 +303,11 @@ class Car:
         
         
     def avanzar(self, matrix, semaforo):
-        if semaforo.is_red(): # cambiar
+        if semaforo.is_green(): 
             return 0
+        
+        if not self.started: # no empezo a cruzar
+            self.locate(matrix)
         
         conflict = 0
         if not matrix.pedestrian_on_crosswalk():
@@ -305,9 +317,18 @@ class Car:
             if distance < self.velocity:
                 conflict = 1
             
-        print(distance)
         self.move(distance, matrix)
         return conflict
+        
+    
+    def locate(self, matrix):
+        self.started = True
+        pos_0_x = np.random.randint(matrix.get_width() // self.size_x) * self.size_x
+        self.initial_pos = Position(pos_0_x, -self.size_y)
+        for i in range(0, self.size_x):
+            self.positions.append([])
+            for j in range(0, self.size_y):
+                self.positions[i].append(Position(self.initial_pos.x + i, self.initial_pos.y + j))
         
         
     def distance_to_pedestrian(self, matrix):
@@ -334,7 +355,9 @@ class Car:
     def is_pedestrian(self):
         return False
         
-        
+    def finished(self, matrix):
+        return self.initial_pos.y > matrix.get_height() 
+    
     def __str__(self):
         return 'Pos {0} Vel {1}'.format(self.position, self.velocity)
 
@@ -366,6 +389,8 @@ class Matrix:
     def distance_to_next_object(self, position_x, position_y, direction):
         position_x += direction
         distance = 0
+        if (0 > position_y) | (position_y >= self.height):
+            return MAX_DISTANCE
         while ((0 <= position_x) & (position_x < self.width)) & (distance < MAX_DISTANCE):
             if self.matrix[position_x][position_y] != None:
                 return distance
@@ -377,6 +402,8 @@ class Matrix:
     def get_next_object(self, position_x, position_y, direction):
         position_x += direction
         distance = 0
+        if (0 > position_y) | (position_y >= self.height):
+            return None
         while ((0 <= position_x) & (position_x < self.width)) & (distance < MAX_DISTANCE):
             if self.matrix[position_x][position_y] != None:
                 return self.matrix[position_x][position_y]
@@ -414,6 +441,13 @@ class Matrix:
                     print('1', end=' ')
                 else:
                     print('2', end=' ')
+                    
+                    
+    def get_height(self):
+        return self.height
+    
+    def get_width(self):
+        return self.width
 
 class State:
 
@@ -425,30 +459,34 @@ class State:
     def __init__(self):
         self.cars = []
         self.pedestrians = []
-        self.crossroad_width = 42
-        self.crossroad_height = 10
+        self.crossroad_width = 62
+        self.crossroad_height = 30
         self.semaforo_tiempo_verde = 5
         self.semaforo_tiempo_rojo = 20
         self.nro_iteracion = 0
         self.cantidad_iteraciones = 100
         self.semaforo = Semaforo(self.semaforo_tiempo_verde, self.semaforo_tiempo_rojo)
         
-        #llegada_peatornes = Poisson ???
-        self.pedestrian_arrival = PedestrianArrival(0.6)
+        #llegada_peatornes = Poisson 
+        self.pedestrian_arrival = PedestrianArrival(0.9)
         
-        #llegada_vehiculos = Poisson ???
-        self.car_arrival = CarArrival(0.2)
-
+        #llegada_vehiculos = Poisson 
+        self.car_arrival = CarArrival(0.5)
+        
+        
+        self.conflicto_peatones_misma_pos = 0
+        self.conflicto_auto_espera_peaton = 0
+    
     def valid_pos(self, x, y, width, height):
         if(x >= 0 and x < width and y >= 0 and y < height):
             return True
         return False  
         
     def iterar(self):
-        
+
         print('cantidad peatones:', len(self.pedestrians))
         print('cantidad autos:', len(self.cars))
-        
+
         # llegada de peatones
         self.pedestrians += self.pedestrian_arrival.next()
         
@@ -458,11 +496,9 @@ class State:
         #avanzar de estado el semaforo
         self.semaforo.iterar(1)
         
-        self.matriz = self.get_positions_matrix() 
-        
+        self.matriz = self.get_positions_matrix()    
         
         proximas_posiciones = {}
-        self.conflicto_peatones_misma_pos = 0
         # Avanzo peatones               
         for peaton in self.pedestrians:
             # Debería devolver conflictos peaton espera auto
@@ -476,18 +512,24 @@ class State:
                 self.conflicto_peatones_misma_pos += 1
                 if (np.random.rand() < 0.5): # con probabilidad 0.5 gana el segundo peaton
                     proximas_posiciones[proxima_posicion] = peaton
+            
+            if peaton.finished(self.matriz):
+                self.pedestrians.remove(peaton)
          
         for peaton in proximas_posiciones.values():
             peaton.continuar(self.matriz)
             
             
-        self.conflicto_auto_espera_peaton = 0
         # Avanzo autos
-        for auto in self.cars:
+        for car in self.cars:
             # Debería devolver confflictos de tipo auto espera peaton (1)
-            conflicto = auto.avanzar(self.matriz, self.semaforo)
+            conflicto = car.avanzar(self.matriz, self.semaforo)
             if conflicto:
                 self.conflicto_auto_espera_peaton += conflicto
+                
+            if car.finished(self.matriz):
+                self.cars.remove(car)
+                
                 
     def conflicto_peatones(self):
         return self.conflicto_peatones_misma_pos
@@ -535,7 +577,6 @@ class State:
                     if(self.valid_pos(p.x, p.y, w, h)):
                         matrix[p.x, p.y] = self.car_cell
         return matrix
-
 
 class Semaforo:
     def __init__(self, tiempo_verde, tiempo_rojo):

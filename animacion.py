@@ -46,11 +46,14 @@ cmap = mpl.colors.LinearSegmentedColormap.from_list("", ["black","red","green"])
 
 traffic_lights_matrix = ax[0].imshow(traffic_lights, cmap=cmap, norm=plt.Normalize(0,4))
 ax[0].axis('off')
-
+ax[0].set_title('Pedestrian light. Red: {} Green {}'.format(s.semaforo.tiempo_rojo, s.semaforo.tiempo_verde))
+ax[1].set_title('Crosswalk')
 # Animacion
-ani = FuncAnimation(fig, update, frames=20000, interval=500)
+ani = FuncAnimation(fig, update, frames=200000000, interval=500)
 plt.show()
 
+# Graficar la cantidad de peatones.
+# Graficar info de la simulación.
 
 # Guardado de la animacion en video
 # probablemente se necesite correr sudo apt install ffmpeg

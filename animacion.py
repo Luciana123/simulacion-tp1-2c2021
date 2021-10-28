@@ -65,14 +65,14 @@ ax[1].set_title('Crosswalk')
 label_stats = ax[0].text(0.1, 0.7, '', fontsize=14, transform=plt.gcf().transFigure)
 
 # Animacion
-ani = FuncAnimation(fig, update, frames=200000000, interval=500)
-plt.show()
+ani = FuncAnimation(fig, update, frames=2000000, interval=500)
+# plt.show()
 
 # Graficar la cantidad de peatones.
 # Graficar info de la simulación.
 
 # Guardado de la animacion en video
 # probablemente se necesite correr sudo apt install ffmpeg
-writervideo = FFMpegWriter(fps=2)
+writervideo = FFMpegWriter(fps=1)
 ani.save('animacion/simu.mp4', writer=writervideo)
 plt.close()
